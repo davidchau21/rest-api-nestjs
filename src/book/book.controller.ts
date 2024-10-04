@@ -10,7 +10,6 @@ import {
   Put,
   Query,
   Req,
-  UploadedFile,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -25,11 +24,19 @@ import { Roles } from '../auth/decorators/role.decorator';
 import { Role } from '../auth/enums/role.enum';
 import { RolesGuard } from '../auth/guards/role.guard';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
 
 @Controller('book')
 export class BookController {
   constructor(private bookService: BookService) {}
 
+  // @SkipThrottle()
+  @Throttle({
+   default : {
+      limit: 1,
+      ttl: 2000,
+   }
+  })
   @Get()
   @Roles(Role.Moderator, Role.Admin)
   @UseGuards(AuthGuard(), RolesGuard)
@@ -82,7 +89,7 @@ export class BookController {
     files: Array<Express.Multer.File>,
   ) {
     console.log(id);
-    console.log(files); // kiểm tra xem file đã được lấy đúng chưa
+    console.log(files); 
 
     return this.bookService.uploadImages(id, files);
   }
